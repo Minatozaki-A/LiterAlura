@@ -30,7 +30,7 @@ public class Solicitud {
             this.parametro = parametro;
         }
 
-        public String construirQuery(String valor) {
+        private String construirQuery(String valor) {
             if (valor == null || valor.trim().isEmpty()) {
                 throw new IllegalArgumentException("El valor no puede ser nulo o vacío");
             }
@@ -60,15 +60,15 @@ public class Solicitud {
         return CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
-    public  HttpResponse<String> getBooksById(String id) throws IOException, InterruptedException {
+    private  HttpResponse<String> getBooksById(String id) throws IOException, InterruptedException {
         return getBooks(TipoConsulta.POR_ID, id);
     }
 
-    public HttpResponse<String> getBookBySearch(String searchTitle) throws IOException, InterruptedException {
+    private HttpResponse<String> getBookBySearch(String searchTitle) throws IOException, InterruptedException {
         return  getBooks(TipoConsulta.POR_BUSQUEDA, searchTitle);
     }
 
-    public Optional<HttpResponse<String>> searchBooksSafely(String searchTitle) {
+    public Optional<HttpResponse<String>> searchBooksTitleSafely(String searchTitle) {
         try {
             HttpResponse<String> response = getBookBySearch(searchTitle);
             return response.statusCode() == 200 ?
@@ -79,7 +79,18 @@ public class Solicitud {
         }
     }
 
-    private boolean isSuccessfulResponse(HttpResponse<String> response) {
+    public Optional<HttpResponse<String>> searchBooksIdSafely(String id){
+        try{
+            HttpResponse<String> response = getBooksById(id);
+            return response.statusCode() == 200 ?
+                    Optional.of(response):Optional.empty();
+        } catch (IOException | InterruptedException e){
+            System.err.println("Error en la solicitud: "+ e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    public boolean isSuccessfulResponse(HttpResponse<String> response) {
         return response.statusCode() >= 200 && response.statusCode() < 300;
     }
 }
